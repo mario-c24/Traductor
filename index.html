@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#2e7d32"/>
+<title>Mario EN & ES</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: #111; color: #e8f5e9; min-height: 100vh; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+    padding: 1rem 1.2rem 0.9rem;
+    border-bottom: 2px solid #4caf50;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .header-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .header h1 { font-size: 15px; font-weight: 500; color: #fff; letter-spacing: 0.3px; }
+  .header p  { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+  /* Body */
+  .body { padding: 1.1rem 1.2rem 1.5rem; }
+
+  /* Top bar */
+  .topbar {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .lang-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+  }
+  .lang-pill.from { background: #2e7d32; border: 1.5px solid #4caf50; color: #fff; }
+  .lang-pill.to   { background: #2c2c2c; border: 1.5px solid #444; color: #ccc; }
+  .lang-code {
+    font-size: 11px; padding: 2px 6px; border-radius: 4px;
+  }
+  .from .lang-code { background: rgba(255,255,255,0.2); }
+  .to   .lang-code { background: rgba(255,255,255,0.1); }
+
+  .btn-swap {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #4caf50; border: none; cursor: pointer;
+    font-size: 18px; color: #fff; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .spacer { flex: 1; }
+
+  /* Action buttons */
+  .btn {
+    padding: 7px 16px; border-radius: 8px; font-size: 13px;
+    cursor: pointer; transition: all 0.15s; font-weight: 500;
+  }
+  .btn-translate {
+    background: #4caf50; color: #fff; border: none;
+  }
+  .btn-translate:disabled { background: #2c2c2c; color: #666; cursor: default; }
+  .btn-copy {
+    background: transparent; border: 1.5px solid #4caf50; color: #4caf50;
+  }
+  .btn-copy:disabled { border-color: #333; color: #444; cursor: default; }
+  .btn-copy.copied  { background: #2e7d32; color: #fff; }
+  .btn-clear {
+    background: transparent; border: 1.5px solid #444; color: #aaa;
+  }
+  .btn-clear:disabled { color: #555; cursor: default; }
+
+  /* Panels */
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media(max-width: 520px) { .panels { grid-template-columns: 1fr; } }
+
+  .panel { border-radius: 10px; overflow: hidden; }
+  .panel.input-panel { border: 1.5px solid #4caf50; }
+  .panel.output-panel{ border: 1.5px solid #333; }
+
+  .panel-header {
+    padding: 7px 12px; font-size: 12px; font-weight: 500;
+    display: flex; justify-content: space-between;
+  }
+  .input-panel .panel-header  { background: #2e7d32; color: #c8e6c9; }
+  .output-panel .panel-header { background: #2c2c2c; color: #aaa; }
+  .char-count { color: #81c784; }
+
+  textarea {
+    width: 100%; min-height: 190px; resize: vertical;
+    padding: 12px; font-size: 15px; line-height: 1.65;
+    border: none; outline: none; background: #1a1a1a;
+    color: #e8f5e9; font-family: sans-serif;
+  }
+  .output-text {
+    min-height: 190px; padding: 12px; font-size: 15px;
+    line-height: 1.65; background: #1e1e1e;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .placeholder { color: #444; font-style: italic; }
+  .translating { color: #555; font-style: italic; }
+  .error-text   { color: #ef9a9a; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-icon">M</div>
+  <div>
+    <h1>MARIO EN INGLES Y EN ESPAÑOL</h1>
+    <p>Traducción instantánea con IA</p>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="body">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="lang-pill from" id="pill-from">
+      <span class="lang-code" id="code-from">EN</span>
+      <span id="label-from">English</span>
+    </div>
+    <button class="btn-swap" onclick="swap()" title="Intercambiar idiomas">⇄</button>
+    <div class="lang-pill to" id="pill-to">
+      <span class="lang-code" id="code-to">ES</span>
+      <span id="label-to">Español</span>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-translate" id="btn-translate" onclick="translate()" disabled>Traducir</button>
+    <button class="btn btn-copy"      id="btn-copy"      onclick="copy()"      disabled>Copiar</button>
+    <button class="btn btn-clear"     id="btn-clear"     onclick="clear()"     disabled>Limpiar</button>
+  </div>
+
+  <!-- Panels -->
+  <div class="panels">
+    <div class="panel input-panel">
+      <div class="panel-header">
+        <span id="header-from">English</span>
+        <span class="char-count"><span id="count">0</span>/2000</span>
+      </div>
+      <textarea id="input" maxlength="2000" placeholder="Escribe en English..." oninput="onInput()"></textarea>
+    </div>
+    <div class="panel output-panel">
+      <div class="panel-header">
+        <span id="header-to">Español</span>
+      </div>
+      <div class="output-text" id="output">
+        <span class="placeholder">La traducción aparecerá aquí</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const LANGS = { EN: "English", ES: "Español" };
+let from = "EN";
+let outputText = "";
+
+function getLang(code){ return LANGS[code]; }
+function getTo(){ return from === "EN" ? "ES" : "EN"; }
+
+function updateUI(){
+  const to = getTo();
+  document.getElementById("code-from").textContent  = from;
+  document.getElementById("label-from").textContent = getLang(from);
+  document.getElementById("code-to").textContent    = to;
+  document.getElementById("label-to").textContent   = getLang(to);
+  document.getElementById("header-from").textContent = getLang(from);
+  document.getElementById("header-to").textContent   = getLang(to);
+  document.getElementById("input").placeholder = "Escribe en " + getLang(from) + "...";
+}
+
+function onInput(){
+  const val = document.getElementById("input").value;
+  document.getElementById("count").textContent = val.length;
+  document.getElementById("btn-translate").disabled = !val.trim();
+  document.getElementById("btn-clear").disabled = !val && !outputText;
+}
+
+async function translate(){
+  const text = document.getElementById("input").value.trim();
+  if(!text) return;
+  const to = getTo();
+  setOutput('<span class="translating">Traduciendo...</span>');
+  document.getElementById("btn-translate").textContent = "Traduciendo...";
+  document.getElementById("btn-translate").disabled = true;
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content:
+          "Translate the following text from " + getLang(from) + " to " + getLang(to) +
+          ". Reply with ONLY the translation, no explanations, no quotes, no extra text.\n\n" + text
+        }]
+      })
+    });
+    const data = await res.json();
+    outputText = data.content?.find(b => b.type === "text")?.text || "";
+    setOutput(outputText ? escHtml(outputText) : '<span class="placeholder">Sin resultado</span>');
+    document.getElementById("btn-copy").disabled  = !outputText;
+    document.getElementById("btn-clear").disabled = false;
+  } catch(e) {
+    setOutput('<span class="error-text">Error al traducir. Inténtalo de nuevo.</span>');
+  }
+  document.getElementById("btn-translate").textContent = "Traducir";
+  document.getElementById("btn-translate").disabled = !document.getElementById("input").value.trim();
+}
+
+function swap(){
+  const prevInput  = document.getElementById("input").value;
+  const prevOutput = outputText;
+  from = getTo();
+  document.getElementById("input").value = prevOutput;
+  outputText = prevInput;
+  setOutput(prevInput ? escHtml(prevInput) : '<span class="placeholder">La traducción aparecerá aquí</span>');
+  document.getElementById("btn-copy").disabled      = !outputText;
+  document.getElementById("btn-translate").disabled = !prevOutput.trim();
+  document.getElementById("btn-clear").disabled     = !prevOutput && !prevInput;
+  document.getElementById("count").textContent = prevOutput.length;
+  updateUI();
+}
+
+function copy(){
+  if(!outputText) return;
+  navigator.clipboard.writeText(outputText).catch(()=>{});
+  const btn = document.getElementById("btn-copy");
+  btn.textContent = "Copiado!";
+  btn.classList.add("copied");
+  setTimeout(()=>{ btn.textContent = "Copiar"; btn.classList.remove("copied"); }, 1800);
+}
+
+function clear(){
+  document.getElementById("input").value = "";
+  outputText = "";
+  setOutput('<span class="placeholder">La traducción aparecerá aquí</span>');
+  document.getElementById("count").textContent = "0";
+  document.getElementById("btn-translate").disabled = true;
+  document.getElementById("btn-copy").disabled      = true;
+  document.getElementById("btn-clear").disabled     = true;
+}
+
+function setOutput(html){ document.getElementById("output").innerHTML = html; }
+function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+updateUI();
+</script>
+</body>
+</html>
